@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nom Nom Now - Food Ordering Platform</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <h1>Nom Nom Now</h1>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active">Home</a>
+            <a href="#restaurants">Restaurants</a>
+            <a href="#orders">My Orders</a>
+        </div>
+        <div class="auth-buttons">
+            <button id="loginBtn" class="btn">Login</button>
+            <button id="registerBtn" class="btn btn-primary">Register</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Delicious Food Delivered To Your Doorstep</h1>
+            <p>Order from your favorite restaurants with just a few clicks</p>
+            <button class="btn btn-large">Order Now</button>
+        </div>
+    </section>
+
+    <!-- Website Description Section -->
+    <section class="about-hero">
+        <div class="about-bg-shape"></div>
+        <div class="about-card glass-card mx-auto">
+            <div class="text-center mb-3">
+                <i class="fa-solid fa-bowl-food fa-3x text-danger"></i>
+            </div>
+            <h2 class="mb-3" style="color:#d7263d; font-weight:700;">Welcome to <span style="color:#ff4757;">Nom Nom Now!</span></h2>
+            <p style="max-width: 700px; margin: 1rem auto; font-size: 1.2rem;">
+                <span style="color:#ff4757; font-weight:600;">Nom Nom Now</span> is your one-stop platform for discovering and ordering delicious food from local restaurants. Whether you're a food lover looking to explore new cuisines or a restaurant owner wanting to reach more customers, <span style="color:#d7263d; font-weight:600;">Nom Nom Now</span> makes it easy and convenient for everyone.
+            </p>
+            <ul style="max-width: 600px; margin: 2rem auto; text-align: left; font-size: 1.1rem;">
+                <li><strong style="color:#d7263d;">For Customers:</strong> Browse a variety of restaurants, view their menus, and place orders online. Track your orders and enjoy fast delivery to your doorstep.</li>
+                <li><strong style="color:#d7263d;">For Restaurant Owners:</strong> Register your restaurant, add your menu, and manage orders from a simple dashboard. Grow your business by connecting with more hungry customers!</li>
+            </ul>
+            <p style="max-width: 700px; margin: 2rem auto; font-size: 1.1rem;">
+                <em>Sign up now to start your food journey with <span style="color:#ff4757;">Nom Nom Now!</span></em>
+            </p>
+            <div class="text-center mt-4">
+                <button class="btn btn-danger btn-lg" id="getStartedBtn"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Get Started</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Register</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Full Name</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">I am a:</label>
+                    <select id="userRole" required>
+                        <option value="customer">Customer</option>
+                        <option value="restaurant_owner">Restaurant Owner</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Restaurant Details Modal -->
+    <div id="restaurantModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="restaurantDetails">
+                <!-- Restaurant details will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Cart -->
+    <div id="cart" class="cart">
+        <h3>Your Order</h3>
+        <div id="cartItems">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <div class="cart-total">
+            <p>Total: $<span id="cartTotal">0.00</span></p>
+            <button id="checkoutBtn" class="btn btn-primary">Checkout</button>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/orders.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        if(getStartedBtn) {
+            getStartedBtn.addEventListener('click', function() {
+                const loginModal = document.getElementById('loginModal');
+                if (loginModal) loginModal.style.display = 'block';
+            });
+        }
+    });
+    </script>
+</body>
+</html> 
