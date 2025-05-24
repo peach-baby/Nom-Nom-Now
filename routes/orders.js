@@ -4,19 +4,43 @@ const Order = require('../models/Order');
 const Restaurant = require('../models/Restaurant');
 const auth = require('../middleware/auth');
 
-// Get all orders for a customer
+// Get all orders for a customer (MySQL version)
 router.get('/customer', auth, async (req, res) => {
   try {
     if (req.user.role !== 'customer') {
       return res.status(403).json({ message: 'Only customers can view their orders' });
     }
 
-    const orders = await Order.find({ customer: req.user.userId })
-      .populate('restaurant', 'name')
-      .sort({ createdAt: -1 });
+    const db = req.app.locals.db;
+    // Get all orders for this customer
+    const [orders] = await db.query(
+      'SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC',
+      [req.user.userId]
+    );
+
+    // For each order, get its items and restaurant name
+    for (let order of orders) {
+      // Get order items
+      const [items] = await db.query(
+        `SELECT oi.quantity, oi.price, mi.name 
+         FROM order_items oi
+         JOIN menu_items mi ON oi.menu_item_id = mi.id
+         WHERE oi.order_id = ?`,
+        [order.id]
+      );
+      order.items = items;
+
+      // Get restaurant name
+      const [restaurantRows] = await db.query(
+        'SELECT name FROM restaurants WHERE id = ?',
+        [order.restaurant_id]
+      );
+      order.restaurantName = restaurantRows.length ? restaurantRows[0].name : '';
+    }
 
     res.json(orders);
   } catch (error) {
+    console.error('Error fetching customer orders:', error);
     res.status(500).json({ message: 'Error fetching orders', error: error.message });
   }
 });

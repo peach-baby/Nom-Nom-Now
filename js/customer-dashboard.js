@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .then(res => res.json())
         .then(orders => {
+            console.log('Fetched orders:', orders);
             if (!orders || !orders.length) {
                 ordersList.innerHTML = '<em>No orders placed yet.</em>';
                 return;
@@ -121,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="mt-2"><strong>Items:</strong>
                             <ul style="margin-bottom:0;">
                                 ${(order.items || order.orderItems || []).map(item => `
-                                    <li>${item.name || item.menuItemName || 'Item'} x ${item.quantity} - $${item.price ? item.price.toFixed(2) : ''}</li>
+                                    <li>${item.name || item.menuItemName || 'Item'} x ${item.quantity} - $${item.price ? Number(item.price).toFixed(2) : ''}</li>
                                 `).join('')}
                             </ul>
                         </div>
@@ -130,7 +131,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             }).join('');
         })
-        .catch(() => {
+        .catch(err => {
+            console.error('Error fetching orders:', err);
             ordersList.innerHTML = '<em>Error loading orders.</em>';
         });
     }
