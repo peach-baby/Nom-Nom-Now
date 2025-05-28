@@ -61,6 +61,74 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Error adding restaurant');
         }
     });
+
+    // Profile section logic
+    const profileSection = document.getElementById('profileSection');
+    const profileLink = document.querySelector('.sidebar-link[href="#profile"], #profileLink');
+
+    function showSection(section) {
+        const ownerRestaurants = document.getElementById('ownerRestaurants');
+        if (ownerRestaurants) ownerRestaurants.style.display = section === 'dashboard' ? '' : 'none';
+        if (profileSection) profileSection.style.display = section === 'profile' ? '' : 'none';
+        if (ordersSection) ordersSection.style.display = section === 'orders' ? '' : 'none';
+    }
+
+    if (profileLink) {
+        profileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('profile');
+            // Pre-fill form
+            const user = JSON.parse(localStorage.getItem('user'));
+            document.getElementById('profileName').value = user.name;
+            document.getElementById('profileEmail').value = user.email;
+            document.getElementById('profilePassword').value = '';
+            if (typeof closeSidebar === 'function') closeSidebar();
+        });
+    }
+
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('profileName').value;
+            const email = document.getElementById('profileEmail').value;
+            const password = document.getElementById('profilePassword').value;
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Profile updated!');
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                } else {
+                    alert(data.message || 'Error updating profile');
+                }
+            } catch (err) {
+                alert('Error updating profile');
+            }
+        });
+    }
+
+    const ordersSection = document.getElementById('ordersSection');
+    const ordersList = document.getElementById('ordersList');
+    const ordersLink = document.querySelector('.sidebar-link[href="#orders"], #ordersLink');
+
+    // Sidebar click for Orders
+    if (ordersLink) {
+        ordersLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('orders');
+            renderOwnerOrders();
+            if (typeof closeSidebar === 'function') closeSidebar();
+        });
+    }
 });
 
 async function fetchOwnerRestaurants() {
@@ -148,5 +216,59 @@ async function fetchMeals(restaurantId) {
         `).join('');
     } else {
         mealList.innerHTML = '<em>No meals yet.</em>';
+    }
+}
+
+// Fetch and render orders for the owner
+async function renderOwnerOrders() {
+    ordersList.innerHTML = '<em>Loading orders...</em>';
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('http://localhost:5000/api/orders/restaurant', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const orders = await res.json();
+        if (!orders.length) {
+            ordersList.innerHTML = '<em>No upcoming orders.</em>';
+            return;
+        }
+
+        // Group items by order ID
+        const grouped = {};
+        orders.forEach(order => {
+            if (!grouped[order.id]) {
+                grouped[order.id] = {
+                    ...order,
+                    items: []
+                };
+            }
+            grouped[order.id].items.push({
+                name: order.item_name,
+                quantity: order.quantity,
+                price: order.price
+            });
+        });
+
+        ordersList.innerHTML = Object.values(grouped).map(order => `
+            <div class="order-card mb-4 p-3 bg-white rounded shadow-sm border">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span><strong>Order #${order.id}</strong></span>
+                    <span class="badge bg-info">${order.status}</span>
+                </div>
+                <div><strong>Customer:</strong> ${order.customer_name} (${order.customer_email})</div>
+                <div><strong>Address:</strong> ${order.delivery_address}</div>
+                <div><strong>Date:</strong> ${order.created_at ? new Date(order.created_at).toLocaleString() : ''}</div>
+                <div class="mt-2"><strong>Items:</strong>
+                    <ul style="margin-bottom:0;">
+                        ${order.items.map(item => `
+                            <li>${item.name} x ${item.quantity} - $${Number(item.price).toFixed(2)}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+                <div class="mt-2"><strong>Total:</strong> $${Number(order.total_amount).toFixed(2)}</div>
+            </div>
+        `).join('');
+    } catch (err) {
+        ordersList.innerHTML = '<em>Error loading orders.</em>';
     }
 }
