@@ -45,25 +45,39 @@ router.get('/customer', auth, async (req, res) => {
   }
 });
 
-// Get all orders for a restaurant (owner only)
+// Get all orders for a restaurant (owner only, MySQL version)
 router.get('/restaurant', auth, async (req, res) => {
   try {
     if (req.user.role !== 'restaurant_owner') {
       return res.status(403).json({ message: 'Only restaurant owners can view their orders' });
     }
 
-    const restaurant = await Restaurant.findOne({ owner: req.user.userId });
-    if (!restaurant) {
-      return res.status(404).json({ message: 'Restaurant not found' });
+    const db = req.app.locals.db;
+    // Get all restaurants owned by this user
+    const [restaurants] = await db.query('SELECT id FROM restaurants WHERE owner_id = ?', [req.user.userId]);
+    if (!restaurants.length) {
+      return res.json([]); // No restaurants, no orders
     }
+    const restaurantIds = restaurants.map(r => r.id);
 
-    const orders = await Order.find({ restaurant: restaurant._id })
-      .populate('customer', 'name email')
-      .sort({ createdAt: -1 });
+    // Get all upcoming orders for these restaurants
+    const [orders] = await db.query(
+      `SELECT o.id, o.status, o.total_amount, o.delivery_address, o.created_at,
+              u.name AS customer_name, u.email AS customer_email,
+              oi.quantity, oi.price, mi.name AS item_name
+         FROM orders o
+         JOIN users u ON o.customer_id = u.id
+         JOIN order_items oi ON o.id = oi.order_id
+         JOIN menu_items mi ON oi.menu_item_id = mi.id
+        WHERE o.restaurant_id IN (?) AND o.status IN ('pending', 'preparing', 'delivering')
+        ORDER BY o.created_at DESC`,
+      [restaurantIds]
+    );
 
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching orders', error: error.message });
+    console.error('Error fetching restaurant orders:', error);
+    res.status(500).json({ message: 'Error fetching restaurant orders', error: error.message });
   }
 });
 
